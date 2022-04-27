@@ -1,0 +1,70 @@
+MULTIPICKING_BK:
+  doit: True
+
+  slicesdelta: [ [1.5, 1.0], [1.25, 0.75] ]     # must be a list/tuple of list/tuple
+  pickers:
+    BK:
+      tdownmax: 0.1
+      tupevent: 0.5    # time [s] for CF to remain above threshold γ
+      thr1: 6          # 10 orig
+      thr2: 10          # 20 orig
+      preset_len: 0.6 # sec
+      p_dur: 1.0       # sec
+
+MULTIPICKING_AIC:
+  doit: True
+
+  slicesdelta: [ [0.75, 0.75], [0.5, 0.5] ]     # must be a list/tuple of list/tuple
+  pickers:
+    AIC:
+      useraw: True
+
+MULTIPICKING_HOS:
+  doit: True
+
+  slicesdelta: [ [1.25, 1.0], [0.75, 0.5] ]     # must be a list/tuple of list/tuple
+  pickers:
+    HOS:
+      useraw: False
+      time_win: 0.3
+      picksel: "aic"  #"aic"/"diff"
+      mode: "kurtosis"
+      transform_dict: {'transform_f2': {},
+                       #'transform_f4': {'window_type': 'hanning'}}
+                       'transform_smooth': {'window_type': 'hanning'}}
+      debugplot: False
+
+MULTIPICKING_FP:
+  doit: True
+
+  slicesdelta: [ [2.75, 1.25], [2.5, 1.0] ]     # must be a list/tuple of list/tuple
+  pickers:
+    FP:
+      filter_window: 1.5
+      longterm_window: 2.5
+      t_up: 0.1
+      threshold_1: 10
+      threshold_2: 10
+      base: 2
+      debugplot: False
+
+JUDGER_PICK:
+  channel: "*Z"
+  extract_picktime: "median"
+  extract_pickerror: 'std'
+  weigther_dict:
+    analysis_key: ("MP",)
+    wintest_thr: 0.3
+    interphase_thr: 0.6
+  polarizer_dict:
+    definition_method: "simple"   # conservative
+    sec_after_pick: 0.015
+    use_raw: False
+  # evaluator_dict:
+  #   functions_dict:
+  #     max_signal2noise_ratio:
+  #       noise_window: 0.5
+  #       signal_window: 0.5
+  #       threshold: 20
+  #       debug_plot: True
+  storing_pick_tag: "finalPick"

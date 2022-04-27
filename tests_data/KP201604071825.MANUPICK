@@ -1,0 +1,9 @@
+ 1 1  200.00  300.00   1.710 2                        INST
+   0.000     0.000  10.00 0000 00 00 00 00  0.00 0    TRIAL
+irene                                                 AUTOR
+2016/04/07 18:24                                      Loca
+IMOL    Pg      E  124.095 1 0.00        0 UNKOWN    0 Pick EHZ   0.000  -0.091   0.199 3
+IMOL    S1      E  128.760 0 0.00        0 UNKOWN    0 Pick EHE   0.000  -0.227   0.216 4
+A303A   P1      Q  133.822 0 0.00        0 UNKOWN    0 Pick HHZ   0.000  -0.455   0.455 5
+A303A   Sg      E  147.322 0 0.00        0 UNKOWN    0 Pick HHT   0.000  -0.265   0.132 3
+                                                      SKIP

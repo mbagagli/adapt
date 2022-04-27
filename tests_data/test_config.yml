@@ -1,0 +1,16 @@
+# YALM conf file
+quakeversion: "0.2.1 (Vidale)"
+
+GENERAL:
+  workingrootdir: "./tests_data"
+  1DVelModel: "/scratch/mbagagli/AutoPSy_InputFiles/EK_1D_tmp.nd"
+
+ARRAY:
+  loadinventory: True
+  createinventory: True
+  exportinventory: True
+  stationxmlfilepath: "./tests_data/statxml"
+  xmlfiletype: "STATIONXML"
+  inventoryxmlfile:  "TMP.xml"
+  # stationpicklepath: "TMP_small.pkl"
+  stationpicklepath: "TMP_small.pkl"

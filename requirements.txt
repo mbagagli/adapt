@@ -1,0 +1,12 @@
+# --- Calc
+numpy>=1.18.1
+scipy>=1.4.1
+# --- Seismic
+obspy>=1.2.2
+#pyrocko>=2020.02.10
+# --- Plot
+#cartopy>=0.17
+matplotlib>=3.1.3
+# --- Misc.
+pytest>=3.7
+tqdm>=4.63

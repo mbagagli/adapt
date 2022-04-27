@@ -1,0 +1,135 @@
+# YALM conf file
+quakeversion: ""
+
+GENERAL:
+  workingrootdir: "./tests_data"
+  1DVelModel: "/scratch/mbagagli/AutoPSy_InputFiles/EK_1D_tmp.nd"
+#  finallog: "Quake_MainOUT.txt"
+#  loggingconfigfile: "/home/mbagagli/.mybin/quake/config/loggers_config.yml"
+
+ARRAY:
+  createinventory: True
+  loadinventory: True
+  exportinventory: True
+  stationxmlfilepath: "./tests_data/statxml"
+  inventoryxmlfile:  "TMP.xml"
+  stationpicklepath: "TMP_small.pkl"
+
+DOWNLOAD_DATA:
+  doit: False
+  overwritewaveforms: False
+  # server: "http://halp9000.ethz.ch:8080/fdsnws/dataselect/1"
+  radiusSelection:
+      - [-inf,3.0,250]               # (low_MAG,hig_MAG,radius[km])
+      - [3.0,4.0,350]
+      - [4.0,inf,500]
+  cutsinterval: [-100,+600]          # of the bigger MSEED
+  channellist:  # order is important! It's the priority searching order
+      - ["HHZ","HHN","HHE"]
+      - ["BHZ","BHN","BHE"]
+      - ["EHZ","EHN","EHE"]
+      - ["HNZ","HNN","HNE"]
+
+IMPORT:
+  components: ["Z","N","E"]
+
+PREPROCESS:
+  doit: True              # MUST BE TRUE
+  removesensitivity: False # need an ObsPy Inventory Loaded
+  removelineartrend: True
+  removemean: True
+  # taperpar: [0.05,'hann']
+  taperpar: False
+  filterpar:
+    # Workng/Tuning
+    filtType: "bandpass"
+    f1: 1.0
+    f2: 30.0
+    corners: 2
+    zerophase: True
+    # ReferencePick
+    # filtType: "bandpass"  # handPicked: BP - 2poles - 1,30 Hz
+    # f1: 1.0
+    # f2: 30.0
+    # corners: 2
+    # zerophase: True
+
+STREAM_EVALUATION:  # Check quake/pick_evaluation for each pick
+  doit: True
+  Noise_StaLta:
+    wsta: 3        # sec
+    wlta: 8        # sec
+    thr_on: 2.0
+    thr_off: 0.3
+
+BAIT_LAYER:
+  doit: True
+  slicedel: 2.0         # float
+  enlargenoisewin: 2.0
+  enlargesignalwin: 0.0
+  outpickersel: "AIC"
+  pickerpar:
+    max_iter: 10
+    opbk_main:
+          tdownmax: 0.1  # float: seconds depends on filtering
+          tupevent: 0.5     # float: seconds depends on filtering
+          thr1: 6.0        # float: sample for CF's value threshold
+          thr2: 10.0        # float: sample for sigma updating threshold
+          preset_len: 0.6   # float: seconds
+          p_dur: 1.0        # float: seconds
+    opbk_aux:
+          tdownmax: 0.1
+          tupevent: 0.25    # time [s] for CF to remain above threshold γ
+          thr1: 3          # 10 orig
+          thr2: 6          # 20 orig
+          preset_len: 0.1 # sec
+          p_dur: 1.0       # sec
+    test_pickvalidation:
+          SignalAmp: [0.5, 0.05]
+          SignalSustain: [0.2, 5, 1.2]
+          LowFreqTrend: [0.2, 0.80]
+    pickAIC: True
+    pickAIC_conf:
+          useraw: True
+          wintrim_noise: 1.1
+          wintrim_sign: 1.1
+
+# *** NB: The multipicking tag shoube named ALWAYS:
+#         MULTIPICKING + Tag of the picker as in picker section
+MULTIPICK_SERIES: 2
+MULTIPICKING_LAYER_P1: "./tests_data/multipick_conf/MULTIPICK_P1.yml"
+MULTIPICKING_LAYER_P2: "./tests_data/multipick_conf/MULTIPICK_P2.yml"
+
+PLOT:
+  debug: False
+  final: True
+  statistic: True
+
+STATISTIC:
+  doit: True # Orig. True
+
+# The next line will store all the necessary dictionaryies on the event folder
+# NB: The first part will be the eqid_
+STOREPICKLE:
+  doit: True
+  baitext: "_BaItEVAL.pkl"
+  qpext_fin: "_PickFINAL.pkl"
+  qpext: "_PickALL.pkl"
+  qsext: "_StatALL.pkl"
+  emdext: "_EventMetaData.pkl"
+  tunmat: "_ClassMatrix.pkl"
+  spectr: "_Spectrogram.pkl"
+  catalog: "_ObsPyCatalog.pkl"
+
+
+EXPORT:
+  doit: False
+  hdf5:
+    save: True
+    name: "Quake_ASDF.h5"
+    opt:
+      behave: "append"              # append/overwrite
+      compression: "gzip-3"         # check pyasdf format
+  fullSEED:
+    save: False
+    name: "Quake_ASDF.seed"

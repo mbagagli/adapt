@@ -1,0 +1,39 @@
+***      V E L E S T   4.5    control-file
+***  created by: ADAPT-VelestTools library
+***     version: 0.7.39 (Dutton)
+***        date: 2021-05-27 @ 16:31:15
+*****************************************************************
+ADAPT-VELEST
+   46.0000    -9.0000  0  0.0000  0  0.00  0
+  1  0  0
+  0  0
+  1000.00  0   0.01   0.20   5.00  0
+  1   0.50  1.730  1
+   0.01   0.01   0.01  100.00   0.10
+  0  1  1  1  1  4  4
+  0  1  1  1  1  0  0
+  1  0  0  1  1
+  0  1  1  0  1
+  0  0  0  0  0  0  0
+  0.010  3  1
+*** Input 1D velocity model(s):
+../runvel.input.mod
+*** Station file:
+../runvel.input.sta
+*** Seismo file:
+
+*** File with region names:
+/usr/local/GEOPHYSICS/velest/4.5.2_MB/regionsnamen.dat
+*** File with region coordinates:
+/usr/local/GEOPHYSICS/velest/4.5.2_MB/regionskoord.dat
+*** File #1 with topo data:
+
+*** File #2 with topo data:
+
+*** Earthquake input file:
+../runvel.input.cnv
+*** File with Shot data:
+
+*** Output files prefix:
+VELEST.out
+*****************************************************************
