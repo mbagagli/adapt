@@ -314,9 +314,29 @@ class PickContainer(OrderedDict):
         for _kill in remlst:
             del self[_kill]
 
-    def sort_by_epidist(self, evla, evlo, statDict):
+    def _sort_by_epidist(self, evla, evlo, statDict):
         """ Still to be implemented """
         pass
+
+    def _sort_by_time(self):
+        """ This method will sort the picklist for each
+            station-phase pair.
+            This will modify the object permanently! Make sure to keep
+            a copy if you need the original.
+        """
+        for _ss, _ppd in self.items():
+            for _pha, _plst in _ppd.items():
+                self[_ss][_pha] = sorted(_plst, key=lambda x: x['timeUTC_pick'])
+
+    def _keep_first_only(self):
+        """ This method will keep only the first pick occurence
+            of each station-phase pair.
+            This will modify the object permanently! Make sure to keep
+            a copy if you need the original.
+        """
+        for _ss, _ppd in self.items():
+            for _pha, _plst in _ppd.items():
+                self[_ss][_pha] = [_plst[0], ]
 
     @classmethod
     def from_dictionary(cls, dictobj):

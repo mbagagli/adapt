@@ -42,7 +42,7 @@ KM = 1000.0  # m
 MT = 0.001   # km
 
 # =================== Format Lines
-FMT_HEADER_CNV = "%2d%02d%02d %02d%02d %05.2f %7.4f%s %8.4f%s%7.2f%7.2f    %3d%10.2f  EVID: %s"
+FMT_HEADER_CNV = "%02d%02d%02d %02d%02d %05.2f %7.4f%s %8.4f%s%7.2f%7.2f    %3d%10.2f  EVID: %s"
 FMT_BODY_CNV = "%s%s%1d%6.2f"
 
 
@@ -418,32 +418,37 @@ def _eventpickdict2cnv(eve, pickd, stations_dict=None, phase_list=['P1', ],
                         else:
                             raise TypeError("Unrecognized PHASE: %s" % phase)
 
-                        if fixed_class:
-                            cla = np.int(fixed_class)
-                        else:
-                            cla = np.int(np.round(phasepickslist[0]['pickclass']))
+                        for pck in phasepickslist:
+                            if fixed_class:
+                                cla = np.int(fixed_class)
+                            else:
+                                cla = np.int(np.round(pck['pickclass']))
 
-                        try:
-                            pht = phasepickslist[0]['timeUTC_pick'] - ot
-                        except TypeError:
-                            # Missing phasepick
-                            continue
+                            try:
+                                pht = pck['timeUTC_pick'] - ot
+                            except TypeError:
+                                # Missing phasepick
+                                continue
 
-                        if use_alias:
-                            if ("alias" not in stations_dict[stat].keys() or
-                               not stations_dict[stat]['alias']):
-                                raise TypeError(
-                                    "ALIAS must be given for station: %s" %
-                                    stat)
-                            printstat = stations_dict[stat]['alias']
-                        else:
-                            printstat = stat
-
-                        OUT.write((FMT_BODY_CNV) % (printstat, phn, cla, pht))
-                        idx += 1
-                        if idx == 6:
-                            OUT.write(os.linesep)
-                            idx = 0
+                            if use_alias:
+                                if ("alias" not in stations_dict[stat].keys() or
+                                   not stations_dict[stat]['alias']):
+                                    raise TypeError(
+                                        "ALIAS must be given for station: %s" %
+                                        stat)
+                                printstat = stations_dict[stat]['alias']
+                            else:
+                                printstat = stat
+                            #
+                            if len(printstat) > 4:
+                                raise ValueError("Stations in CNV file must be "
+                                                 "4 char long only!")
+                            #
+                            OUT.write((FMT_BODY_CNV) % (printstat, phn, cla, pht))
+                            idx += 1
+                            if idx == 6:
+                                OUT.write(os.linesep)
+                                idx = 0
             # --- End of EVENT
             if idx == 0:
                 OUT.write(os.linesep)
@@ -503,36 +508,37 @@ def _eventpickdict2cnv(eve, pickd, stations_dict=None, phase_list=['P1', ],
                     else:
                         raise TypeError("Unrecognized PHASE: %s" % phase)
 
-                    if fixed_class:
-                        cla = np.int(fixed_class)
-                    else:
-                        cla = np.int(np.round(phasepickslist[0]['pickclass']))
+                    for pck in phasepickslist:
+                        if fixed_class:
+                            cla = np.int(fixed_class)
+                        else:
+                            cla = np.int(np.round(pck['pickclass']))
 
-                    try:
-                        pht = phasepickslist[0]['timeUTC_pick'] - ot
-                    except TypeError:
-                        # Missing phasepick
-                        continue
+                        try:
+                            pht = pck['timeUTC_pick'] - ot
+                        except TypeError:
+                            # Missing phasepick
+                            continue
 
-                    if use_alias:
-                        if ("alias" not in stations_dict[stat].keys() or
-                           not stations_dict[stat]['alias']):
-                            raise TypeError(
-                                "ALIAS must be given for station: %s" % stat)
-                        printstat = stations_dict[stat]['alias']
-                    else:
-                        printstat = stat
-                    #
-                    if len(printstat) > 4:
-                        raise ValueError("Stations in CNV file must be "
-                                         "4 char long only!")
-
-                    use_buffer.write((FMT_BODY_CNV) %
-                                     (printstat, phn, cla, pht))
-                    idx += 1
-                    if idx == 6:
-                        use_buffer.write(os.linesep)
-                        idx = 0
+                        if use_alias:
+                            if ("alias" not in stations_dict[stat].keys() or
+                               not stations_dict[stat]['alias']):
+                                raise TypeError(
+                                  "ALIAS must be given for station: %s" % stat)
+                            printstat = stations_dict[stat]['alias']
+                        else:
+                            printstat = stat
+                        #
+                        if len(printstat) > 4:
+                            raise ValueError("Stations in CNV file must be "
+                                             "4 char long only!")
+                        #
+                        use_buffer.write((FMT_BODY_CNV) %
+                                         (printstat, phn, cla, pht))
+                        idx += 1
+                        if idx == 6:
+                            use_buffer.write(os.linesep)
+                            idx = 0
         # --- End of EVENT
         if idx == 0:
             use_buffer.write(os.linesep)
@@ -955,7 +961,8 @@ def cnv2quake(cnvfile, info_store="VelestRun",
         #                         },
         #                              ]
         #                     }
-        obsDict = {}
+
+        obsDict = PickContainer(_eqid, info_store, "VELEST")
         for _ob in _eqtpl[1]:
             # 'I041P0  9.67'
             statnm = _ob[0:4]
@@ -972,14 +979,10 @@ def cnv2quake(cnvfile, info_store="VelestRun",
             statcl = np.int(_ob[5])
             stattt = evot + np.float(_ob[6:])
             #
-            obsDict[statnm] = {('VEL_' + statph): [
-                                            {'pickclass': statcl,
-                                             'timeUTC_pick': stattt},
-                                                  ]
-                               }
-        # ... finally append
-        pkcnt.append(QP.dict2PickContainer(
-                                obsDict, _eqid, info_store, "VELEST"))
+            obsDict.addPick(statnm, 'VEL_' + statph,
+                            pickclass=statcl,
+                            timeUTC_pick=stattt)
+        pkcnt.append(obsDict)
     #
     return opcat, pkcnt
 
@@ -1244,6 +1247,13 @@ def _define_class(delta, velres, classdict):
     #     '3': 0.8,
     # }
 
+    # --- IM-SC3
+    # classdict={'0': 0.05,
+    #            '1': 0.1,
+    #            '2': 0.2,
+    #            '3': 0.4,
+    #            '4': 0.8},
+
     dist = np.sqrt(delta**2 + velres**2)
     #
     cc = 4
@@ -1260,7 +1270,7 @@ def _define_class(delta, velres, classdict):
     else:
         raise ValueError("Something Fishy --> %f" % dist)
     #
-    return cc
+    return cc, dist
 
 
 def _classify_cnv(cnvfile, staresfile, csvfile,
@@ -1292,7 +1302,7 @@ def _classify_cnv(cnvfile, staresfile, csvfile,
                                 (df['alias'] == ss)]['epidist'])
                 OUT.write(("%s,%s,%8.4f, %8.4f, %7.3f"+os.linesep) %
                           (ev, ss, epid, tetl, resid))
-                mycc = _define_class(tetl, resid, classdict)
+                mycc, _ = _define_class(tetl, resid, classdict)
                 #
                 if epid <= epidistmax:
                     evpickd[ss]["VEL_P"][0]['pickclass'] = mycc
@@ -1311,51 +1321,115 @@ def _classify_cnv(cnvfile, staresfile, csvfile,
         logger.warning("- %s" % _ev)
 
 
-def _classify_cnv_reloc(
-                  relocfile, csvfile,
-                  outfilecsv="classify_debug.csv",
+# def _classify_reloc(
+#                   relocfile, csvfile,
+#                   outfilecsv="classify_debug.csv",
+#                   classdict={'0': 0.1, '1': 0.2, '2': 0.4, '3': 0.8}):
+#     relobj = RELOC(relocfile)  # dict[eqid][statname]   #ID 'I022': {'stat_name_velest': 'I022', 'phase_name': 'P', 'phase_weight': 0, 'obs_res': 0.202, 'obs_tt': 44.39, 'obs_delta': 298.06},
+#     cat, pdl = relobj.reloc_catalog, relobj.reloc_pickList
+#     print("Reading CSV")
+#     df = pd.read_csv(csvfile)
+#     missing_events = []
+#     #
+#     with open(outfilecsv, 'w') as OUT:
+#         OUT.write("EQID, STAT, EPIDIST, PHASE, DELTA, RESID, CLASS"+os.linesep)
+#         ln = len(relobj.reloc_catalog)
+#         for xx, ev in enumerate(cat):
+#             eqid = ev.resource_id.id
+#             respckdct = QU.extract_pickdict(pdl, eqid=eqid)
+#             if not respckdct:
+#                 missing_events.append(ev)
+#                 continue
+#             #
+#             for ss, pds in respckdct.items():
+#                 for ph, php in pds.items():
+#                     # Usually in RELOC file there's should be only one obs per phase
+#                     resid = php[0]['general_infos']['residual']
+#                     tetl = np.float(df[(df['id'] == eqid) &
+#                                     (df['alias'] == ss)]['tlatetearly'])
+#                     epid = np.float(df[(df['id'] == eqid) &
+#                                     (df['alias'] == ss)]['epidist'])
+#                     mycc = _define_class(tetl, resid, classdict)
+#                     #
+#                     OUT.write(("%s,%s,%8.4f,%s,%8.4f,%7.3f,%d"+os.linesep) %
+#                               (eqid, ss, epid, ph, tetl, resid, mycc))
+#                     php[0]['pickclass'] = mycc
+#                 #
+#             progressBar(xx, ln-1, 'Classifying: ', 'DONE',
+#                         decimals=2, barLength=15)
+#     #
+#     quake2cnv(cat, pdl, statdict=None,
+#               phase_list=["P", "S", ],
+#               fixed_class=False, use_alias=False, out_file="classified.cnv")
+#     #
+#     logger.warning("List of missing EVENTS:")
+#     for _ev in missing_events:
+#         logger.warning("- %s" % _ev)
+
+
+"""
+Let's use the next function as official:
+- It should be used if you classify CNV after SEM (Step_7) and after
+new magnitudes have been estimated.
+- Use the final CNV (final catalog) together + RELOC files as
+error file + ADAPT_newstats_CSV for the Tlate-Tearly values
+
+"""
+
+
+def classify_cnv_ajv(
+                  cnvfile, relocfile, csvfile,
+                  outfilecsv="classify_debug.csv", skip_evid=[],
                   classdict={'0': 0.1, '1': 0.2, '2': 0.4, '3': 0.8}):
+
+    cnvobj = CNV(cnvfile)
+    cat, pdl = cnvobj.get_catalog(), cnvobj.get_pick_dict_list()
+    #
     relobj = RELOC(relocfile)  # dict[eqid][statname]   #ID 'I022': {'stat_name_velest': 'I022', 'phase_name': 'P', 'phase_weight': 0, 'obs_res': 0.202, 'obs_tt': 44.39, 'obs_delta': 298.06},
-    cat, pdl = relobj.reloc_catalog, relobj.reloc_pickList
+    #
+    logger.info("Reading CSV")
     df = pd.read_csv(csvfile)
     missing_events = []
     #
     with open(outfilecsv, 'w') as OUT:
-        OUT.write("EQID, STAT, EPIDIST, PHASE, DELTA, RESID, CLASS"+os.linesep)
-        ln = len(relobj.reloc_catalog)
+        OUT.write("EQID, STAT, EPIDIST, PHASE, DELTA, RESID, CLASS, ERRORNORM"+os.linesep)
+
         for xx, ev in enumerate(cat):
             eqid = ev.resource_id.id
-            respckdct = QU.extract_pickdict(pdl, eqid=eqid)
-            if not respckdct:
+            _work_pd = QU.extract_pickdict(pdl, eqid=eqid)
+            if not _work_pd:
                 missing_events.append(ev)
                 continue
+            if eqid in skip_evid:
+                logger.warning("EVENT:  %s  ---> Skipped" % eqid)
+                continue
             #
-            for ss, pds in respckdct.items():
+            for ss, pds in _work_pd.items():
                 for ph, php in pds.items():
-                    # Usually in RELOC file there's should be only one obs per phase
-                    resid = php[0]['general_infos']['residual']
+                    # Usually, as the dict is from VELEST, the cnv2quake
+                    # script is linking only VEL_P and VEL_S for P and S.
+                    # In particular, only the first occurence (index 0)
+                    resid = relobj.extract_residual(eqid, ss, ph[-1], indexnum=0)
                     tetl = np.float(df[(df['id'] == eqid) &
                                     (df['alias'] == ss)]['tlatetearly'])
                     epid = np.float(df[(df['id'] == eqid) &
                                     (df['alias'] == ss)]['epidist'])
-                    mycc = _define_class(tetl, resid, classdict)
+                    mycc, errnorm = _define_class(tetl, resid, classdict)
                     #
-                    OUT.write(("%s,%s,%8.4f,%s,%8.4f,%7.3f,%d"+os.linesep) %
-                              (eqid, ss, epid, ph, tetl, resid, mycc))
+                    OUT.write(("%s,%s,%8.4f,%s,%8.4f,%7.3f,%d,%.3f"+os.linesep) %
+                              (eqid, ss, epid, ph, tetl, resid, mycc, errnorm))
                     php[0]['pickclass'] = mycc
                 #
-        progressBar(xx, ln-1, 'Classifying: ', 'DONE',
-                    decimals=2, barLength=15)
+            progressBar(xx, len(cat)-1, 'Classifying: ', 'DONE',
+                        decimals=2, barLength=15)
     #
     quake2cnv(cat, pdl, statdict=None,
-              phase_list=["P", "S", ],
+              phase_list=["VEL_P", "VEL_S", ],
               fixed_class=False, use_alias=False, out_file="classified.cnv")
     #
     logger.warning("List of missing EVENTS:")
     for _ev in missing_events:
         logger.warning("- %s" % _ev)
-
-
 
 
 class CNV(object):
@@ -1437,12 +1511,34 @@ class CNV(object):
                         _pd = QU.extract_pickdict(self.cnv_pickList, evid=eqid)
                         _pd.delete_pick(statname, "VEL_"+phasename, 0)  # MB only one phase per station when reading CNV, always! --> do not change 0
 
+    def keep_first_arrival(self):
+        """ This wrapper function will internally call the private
+            PickContainer._sort_by_time and
+            PickContainer._keep_first_only methods to keep only the
+            first pick occurence in time for each station-phase pair
+        """
+        for pickdict in self.cnv_pickList:
+            pickdict._sort_by_time()
+            pickdict._keep_first_only()
+
     def export_to_file(self, outname):
         """ Simply export out """
         self._remove_empty_stations()
         quake2cnv(self.cnv_catalog, self.cnv_pickList, statdict=None,
                   phase_list=["VEL_P", "VEL_S"],
                   fixed_class=False, use_alias=False, out_file=outname)
+
+    def get_catalog(self):
+        if self.cnv_catalog:
+            return self.cnv_catalog
+        else:
+            logger.warning("Missing CATALOG. Run `import_file` method first!")
+
+    def get_pick_dict_list(self):
+        if self.cnv_pickList:
+            return self.cnv_pickList
+        else:
+            logger.warning("Missing PICKDICTLIST. Run `import_file` method first!")
 
 
 class RELOC(object):
@@ -1487,7 +1583,8 @@ class RELOC(object):
 
     def _cnv_export(self, rel_cat, rel_pick_list, outfile_name="cnv_eport.cnv"):
         """ Simply export catalog and picks into CNV format """
-        quake2cnv(rel_cat, rel_pick_list, statdict=None,
+        quake2cnv(self.reloc_catalog, self.reloc_pickList,
+                  statdict=None,
                   phase_list=["P", "S"],
                   fixed_class=False, use_alias=False, out_file=outfile_name)
 
@@ -1793,8 +1890,21 @@ class RELOC(object):
 
     def export_to_cnv(self, outfile_name="reloc2cnv.cnv"):
         """ Export the entire RELOC in MEMORY to CNV file """
-        self._cnv_export(self.reloc_catalog, self.reloc_pickList,
-                         outfile_name=outfile_name)
+        self._cnv_export(outfile_name=outfile_name)
+
+    def extract_residual(self, eqid, stat, phase, indexnum=0):
+        """ This method returns the residual of a given station-phase
+            pair for a given event. If event not included, will return
+            None and raise a warning
+        """
+
+        if phase.lower() not in ("p", "s"):
+            raise ValueError("Phase must be either 'P' or 'S' only!")
+        #
+        _tmp_pd = QU.extract_pickdict(self.reloc_pickList, eqid)
+        _, _pk = _tmp_pd.getMatchingPick(stat, phase.upper(),
+                                         indexnum=indexnum)[0]  # first occurence only
+        return _pk['general_infos']['residual']
 
 
 class STA(object):
@@ -1974,6 +2084,63 @@ class STA(object):
             #
             OUT.write(os.linesep*2)
         return True
+
+    def import_station_corrections(self, staobj, full_match=True):
+        """ This method will take the pcorr and scorr of
+            the given stat-object into the current instance
+
+            If full_match is given, in addition to the station code also
+            the lon-lat-dep parameters will be checked. otherwise only
+            the station-code will be used.
+
+            Please note that the matching is done case-sensitive)
+        """
+        if not isinstance(staobj, sys.modules[__name__].STA):
+            raise TypeError("Need a STA class instance. Given:  %s" %
+                            type(staobj))
+        #
+        for ss, vals in self.statcontainer.items():
+            # seek dictionary
+            try:
+                other_station = staobj.statcontainer[ss]
+            except KeyError:
+                logger.warning("Station %s not find in input. Skipping ..." % ss)
+                continue
+            #
+            if full_match:
+                if (other_station['elev'] != vals['elev'] or
+                   other_station['lon'] != vals['lon'] or
+                   other_station['lat'] != vals['lat']):
+                    logger.warning("Station %s found. No Full-match! Skipping ..." %
+                                   ss)
+                    continue
+            # Override
+            vals['pcorr'] = other_station['pcorr']
+            vals['scorr'] = other_station['scorr']
+
+    def reset_station_corrections(self, stations_list=None,
+                                  pobs_thr=20, sobs_thr=20,
+                                  group="P", value=0.0):
+        """ It will reset the pcorr and scorr of station with LESS than
+            pobs/sobs observations
+        """
+        if group.lower() not in ("p", "s"):
+            raise ValueError("Group must be either 'P' or 'S' --> %s" %
+                             group)
+        #
+        if stations_list:
+            keystat = [
+                ss for ss in self.statcontainer.keys() if ss in stations_list]
+        else:
+            keystat = self.statcontainer.keys()
+        #
+        for ss in keystat:
+            if (group.lower() == "p" and
+               self.statcontainer[ss]['pobs'] < pobs_thr):
+                self.statcontainer[ss]["pcorr"] = value
+            elif (group.lower() == "s" and
+                  self.statcontainer[ss]['sobs'] < sobs_thr):
+                self.statcontainer[ss]["scorr"] = value
 
 
 class VELEST(object):
