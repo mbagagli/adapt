@@ -8,7 +8,7 @@ from adapt.layers import InitialBaitLayer
 
 
 def test_init():
-    conf = QU.getQuakeConf("./tests_data/test_config_layer_v041.yml")
+    conf = QU.get_adapt_config("./tests_data/test_config_layer_v041.yml")
     st_raw = read()
     st_proc = QPR.processStream(st_raw,
                                 copystream=True,
@@ -26,7 +26,7 @@ def test_init():
 def test_simpleWorkflow():
     errors = []
     #
-    conf = QU.getQuakeConf("./tests_data/test_config_layer_v041.yml")
+    conf = QU.get_adapt_config("./tests_data/test_config_layer_v041.yml")
     st_raw = read()
     st_proc = QPR.processStream(st_raw,
                                 copystream=True,

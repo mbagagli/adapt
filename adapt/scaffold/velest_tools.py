@@ -1508,7 +1508,7 @@ class CNV(object):
                     phasename = fields[1].upper()
                     if np.abs(np.float(res)) >= threshold:
                         # Seek the event, remove the obs
-                        _pd = QU.extract_pickdict(self.cnv_pickList, evid=eqid)
+                        _pd = QU.extract_pickdict(self.cnv_pickList, eqid=eqid)
                         _pd.delete_pick(statname, "VEL_"+phasename, 0)  # MB only one phase per station when reading CNV, always! --> do not change 0
 
     def keep_first_arrival(self):

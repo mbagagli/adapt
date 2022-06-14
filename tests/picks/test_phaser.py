@@ -1,10 +1,19 @@
 import pprint
-from adapt.database import PickContainer, StatContainer_Event
+from adapt.database import PickContainer, StatContainer_Event, StatContainer
 import adapt.utils as QU
 import adapt.errors as QE
 #
 from obspy import read
 from adapt.picks.phaser import Spock
+
+
+def convert_StatMeta2StatCont(statmeta):
+    SC = StatContainer(source_id="test", contains="seismometer", tagstr="test")
+    for eqid in statmeta.keys():
+        for _stat, _metadict in statmeta[eqid].items():
+            for _mn, _mv in _metadict.items():
+                SC.append_meta(_stat, eqid, _mn, _mv)
+    return SC
 
 
 def mini_process(rst):
@@ -31,7 +40,10 @@ EV = QU.loadPickleObj('./tests_data/AllCatalog_ObsPyCatalog.pkl')
 
 _tmp_meta = QU.loadPickleObj('./tests_data/KP201606231437_EventMeta.pkl')
 
-SD = StatContainer_Event.from_dictionary(_tmp_meta)
+_sd = StatContainer_Event.from_dictionary(_tmp_meta)
+SD = convert_StatMeta2StatCont(_sd)
+
+
 
 def test_initialization():
     errors = []

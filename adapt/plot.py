@@ -1094,7 +1094,7 @@ def plot_feature_xy(lon_list=[],
 
 def plot_map_comparison(ev,
                         statdict,
-                        metastatdict,
+                        # metastatdict,
                         pickdict,
                         type="reference",
                         save=False,
@@ -1110,15 +1110,16 @@ def plot_map_comparison(ev,
     eqid = ev.resource_id.id
     mmag = ev.magnitudes[0].mag
     # === Extract Station NAME
-    # _sta_all = len(metastatdict[eqid].keys())
-    if type.lower() in ("ref", "reference"):
-        _sta_ref = [_sta for _sta, _sta_info in metastatdict[eqid].items()
-                    if metastatdict[eqid][_sta]["isreference"]]
-    elif type.lower() in ("auto", "automatic"):
-        _sta_ref = [_sta for _sta, _sta_info in metastatdict[eqid].items()
-                    if metastatdict[eqid][_sta]["isautomatic"]]
-    else:
-        raise QE.InvalidParameter("Type must be 'ref' or 'auto'")
+    # if type.lower() in ("ref", "reference"):
+    #     _sta_ref = [kk for kk, vv in statdict.items ()
+    #                 if vv["meta"][eqid]["isreference"]]
+    # elif type.lower() in ("auto", "automatic"):
+    #     _sta_ref = [kk for kk, vv in statdict.items ()
+    #                 if vv["meta"][eqid]["isautomatic"]]
+    # else:
+    #     raise QE.InvalidParameter("Type must be 'ref' or 'auto'")
+
+    _sta_ref = [kk for kk, vv in statdict.items ()]
 
     _sta_picked = []
     for _sta, _dict in pickdict.items():

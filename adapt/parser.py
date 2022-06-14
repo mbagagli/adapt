@@ -6,10 +6,13 @@ funtions and methods to convert from
 import os
 import logging
 import copy
+from pathlib import Path
 #
 import adapt.database as QD
 import adapt.errors as QE
 #
+from obspy import read_inventory
+from obspy.core.inventory import Inventory, Network, Station, Channel, Site
 import obspy.core.event as opev
 from obspy import UTCDateTime
 from collections import Counter
@@ -537,7 +540,7 @@ def obspy_inventory2adapt_inventory(opinv, create_alias=False):
         #
         return netnm[0] + '{:03d}'.format(IDXCOUNT[netnm])
 
-    sd = QD.StatContainer(id=None, contains="seismometer", tagstr="info-string")
+    sd = QD.StatContainer(source_id=None, contains="seismometer", tagstr="info-string")
     for net in opinv:
         for ss in net:
             newst = {}
@@ -576,6 +579,25 @@ def obspy_inventory2adapt_inventory(opinv, create_alias=False):
             raise QE.CheckError("There are duplicates in ALIAS list: %r" % failed_list)
     #
     return sd
+
+
+# def folder2obspy_inventory(netfolder):
+#     """ This utils will append all the station contained in
+#     a folder under the same network name (netname)
+#     """
+#     netfolder = Path(netfolder)
+#     out_inv = Inventory()
+#     #
+#     _net = []
+#     _sta = {}  # net: []
+#     _sta = {}  # net: []
+#     for net in netfolder.iterdir():
+#         _inv = Inventory(networks=[net.name, ])
+#         for stat in net.glob("*xml"):
+#             _stat = read_inventory(stat)
+#             import pdb; pdb.set_trace()
+
+
 
 
 # =========================================================  TIPS

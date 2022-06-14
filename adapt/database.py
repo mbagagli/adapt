@@ -411,7 +411,7 @@ class StatContainer(OrderedDict):
                               'elev_m',          # (float)
                               'elev_km',         # (float)
                               'network',         # (str)
-                              'general_infos'
+                              'meta'             # dict
                               )
 
     # The next Method has been added to let load/store with pickle
@@ -616,6 +616,38 @@ class StatContainer(OrderedDict):
         for ss in workdict.keys():
             _tmp.addStat(ss, workdict[ss])
         return _tmp
+
+    def sort_by_distance(self, metaid):
+
+        try:
+            epilist = [(kk, vv["meta"][metaid]["epidist"])
+                       for kk, vv in self.items()]
+        except KeyError:
+            logger.error("Missing epicentral distance for ID: %s" % metaid)
+            logger.error("... skip the sorting")
+            return False
+        #
+        epilist.sort(key=lambda x: x[1])
+        original = copy.deepcopy(self)
+        for statkey, _ in epilist:
+            del self[statkey]
+            self[statkey] = original[statkey]
+        # Free the copy from RAM
+        del original
+
+    def append_meta(self, station, meta_id, meta_name, meta_value):
+        try:
+            self[station]["meta"][meta_id][meta_name] = meta_value
+        except KeyError:
+            # Something is missing, check what and initialize
+            if station not in self.keys():
+                self.addStat(station, {})  # initialize empty station
+            if "meta" not in self[station].keys():
+                self[station]["meta"] = {}
+            if meta_id not in self[station]["meta"].keys():
+                self[station]["meta"][meta_id] = {}
+            #
+            self[station]["meta"][meta_id][meta_name] = meta_value
 
 
 class StatContainer_Event(OrderedDict):

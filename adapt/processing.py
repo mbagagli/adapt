@@ -33,6 +33,19 @@ def importWaveformsStream(waveformdir, format="SAC", complist=None):
     return instr
 
 
+def importAllWaveforms(waveformdir):
+    """
+    This function will return an obspy Stream object with all
+    the data contained in the waveformdir.
+
+    NB: the data-format must be supported by obspy_read
+    """
+    logger.info("Importing ...")
+    instr = read(waveformdir+os.sep+"*."+format)
+    logger.info("a total of %d traces!" % len(instr))
+    return instr
+
+
 def processStream(st, copystream=True, clear_empty_traces=True,
                   integrate_accelerometer=True, **kwargs):
     """

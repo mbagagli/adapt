@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 #
 from obspy import Stream
 from obspy import UTCDateTime
@@ -7,6 +8,8 @@ from obspy.clients.fdsn.mass_downloader import RectangularDomain
 from obspy.clients.fdsn.mass_downloader import CircularDomain
 from obspy.clients.fdsn.mass_downloader import Restrictions
 from obspy.clients.fdsn.mass_downloader import MassDownloader
+#
+from obspy.geodetics import kilometers2degrees
 #
 from obspy.io.mseed import InternalMSEEDError
 from obspy.clients.filesystem.sds import Client as SDSCLIENT
@@ -30,43 +33,59 @@ class TheGathering(object):
     Wrapper over the `MassDownloader` ObsPy function
     """
     def __init__(self,
+                 mseed_storage_path,
+                 stationxml_storage_path,
                  domain_type='circular',
                  domain_dict={},
                  restrictions_dict={},
-                 providers_list=[]):
-        # MB: defining attributes
+                 providers_list=None):
+        # --- Check
+        if not isinstance(mseed_storage_path, (str, Path)):
+            raise ValueError("I need a MSEED-STORAGE path to work on!")
+        if not isinstance(stationxml_storage_path, (str, Path)):
+            raise ValueError("I need a STATION_XML-STORAGE path to work on!")
+
+        # --- Init
+        self.mseed_path = Path(mseed_storage_path)
+        self.stationxml_path = Path(stationxml_storage_path)
         self.mdl = MassDownloader(providers=providers_list)
-        # Domain
+
+        # --- Domain
         if domain_type.lower() in ('circular', 'circ', 'c'):
             self.domain = CircularDomain(**domain_dict)
         elif domain_type.lower() in ('rectangular', 'rect', 'r'):
             self.domain = RectangularDomain(**domain_dict)
         else:
             raise QE.InvalidParameter()
-        # Restrictions
+
+        # --- Restrictions
         self.restrictions = Restrictions(**restrictions_dict)
 
-    def collect(self,
-                mseed_storage_path="waveforms",
-                stationxml_storage_path="stations",
-                convert_to=None):
+    def collect(self):
         """Download data from provided fdsn client
 
         User can specify the destination folder for both miniseed and
         stations.
 
         """
+        logger.info("Downlading WORKDIR-WAVEFORMS:  %s" % str(self.mseed_path.parents[0]))
+        logger.info("Downlading INVENTORY:  %s" % str(self.stationxml_path.parents[1]))
+        logger.info("Downlading CENTRE:  %.4f (lon) %.4f (lat) %.1f (radius)" %
+                    (self.domain.longitude, self.domain.latitude,
+                     self.domain.maxradius))
+        logger.info("Downlading TIME:  %s (start) %s (end)" %
+                    (self.restrictions.starttime.datetime,
+                     self.restrictions.endtime.datetime))
+        #
         self.mdl.download(self.domain,
                           self.restrictions,
-                          mseed_storage=mseed_storage_path,
-                          stationxml_storage=stationxml_storage_path)
-        if (convert_to and
-           isinstance(convert_to, 'str') and
-           convert_to in ('SAC', 'GSE2')):
-            #
-            logging.info('Converting Downloaded data into %s format' %
-                         convert_to)
-            # MB: Not yet implemented
+                          mseed_storage=str(self.mseed_path.resolve()),
+                          stationxml_storage=str(self.stationxml_path.resolve())
+                          )
+
+    def create_obspy_inventory(self):
+        """ Create Obspy Inventory from XML storagepath """
+        pass
 
 
 class TheGatheringLocal(object):

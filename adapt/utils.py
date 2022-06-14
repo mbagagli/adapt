@@ -26,12 +26,14 @@ FORMATS = {
     logging.CRITICAL:  f"\33[1m\33[31m{FMT}\33[0m"
 }
 
+
 class CustomFormatter(logging.Formatter):
     def format(self, record):
         log_fmt = FORMATS[record.levelno]
         formatter = logging.Formatter(log_fmt, style="{")  # needed for custom styling
         return formatter.format(record)
 # ===============================================================
+
 
 logger = logging.getLogger(__name__)
 
@@ -188,7 +190,7 @@ def configLoggers():
         )
 
 
-def getQuakeConf(filepath, check_version=False):
+def get_adapt_config(filepath, check_version=False):
     """
     Simple function to unpack the QUAKE / QUAKE_ML
     configuration file and return as a dict.
@@ -210,7 +212,8 @@ def getQuakeConf(filepath, check_version=False):
         else:
             logger.error(("INSTALLED version: %s  /  CONFIG version: %s") %
                          (__version__, outDict['adaptversion']))
-            raise QE.BadConfigurationFile
+            raise QE.BadConfigurationFile(
+                "%s: not a valid CONFIGFILE, check version!" % filepath)
     #
     return outDict
 

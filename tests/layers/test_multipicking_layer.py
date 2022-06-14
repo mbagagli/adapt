@@ -22,8 +22,9 @@ def _compare_floats_dictionaries(testdict, refdict, decimal=10):
     #
     return asserr
 
+
 def test_init():
-    conf = QU.getQuakeConf("./tests_data/test_config_layer_v041.yml")
+    conf = QU.get_adapt_config("./tests_data/test_config_layer_v041.yml")
     st_raw = read()
     st_proc = QPR.processStream(st_raw,
                                 copystream=True,
@@ -40,17 +41,18 @@ def test_init():
             multipicking_dict=None,
             multipicking_tag="MP")
 
+
 def test_simpleWorkflow():
     errors = []
 
-    conf = QU.getQuakeConf("./tests_data/test_config_layer_v041.yml")
+    conf = QU.get_adapt_config("./tests_data/test_config_layer_v041.yml")
     st_raw = read()
     st_proc = QPR.processStream(st_raw,
                                 copystream=True,
                                 **conf)
 
     # Init
-    mp_dict_complete = QU.getQuakeConf(conf['MULTIPICKING_LAYER_P1'],
+    mp_dict_complete = QU.get_adapt_config(conf['MULTIPICKING_LAYER_P1'],
                                        check_version=False)
     collect_mp_dict = {_k: _v for _k, _v in mp_dict_complete.items()
                        if _k != 'JUDGER_PICK'}
@@ -122,7 +124,7 @@ def test_simpleWorkflow():
 def test_adding_associated_pick():
     errors = []
 
-    conf = QU.getQuakeConf("./tests_data/test_config_layer_v041.yml")
+    conf = QU.get_adapt_config("./tests_data/test_config_layer_v041.yml")
     st_raw = read()
     st_proc = QPR.processStream(st_raw,
                                 copystream=True,
@@ -139,7 +141,7 @@ def test_adding_associated_pick():
             associated_time_attribute_dict={
                     'pickpolar': "U",
                     'timeUTC_pick': UTCDateTime("1987-03-02T00:00:00")},
-            multipicking_dict=QU.getQuakeConf(
+            multipicking_dict=QU.get_adapt_config(
                                     conf['MULTIPICKING_LAYER_P1'],
                                     check_version=False),
             multipicking_tag="MP")

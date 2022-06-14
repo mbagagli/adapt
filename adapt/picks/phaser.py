@@ -3,7 +3,7 @@ import copy
 #
 from obspy.core.event import Catalog
 from adapt.database import PickContainer
-from adapt.database import StatContainer_Event
+from adapt.database import StatContainer
 import adapt.picks.phaser_functions as FUNCTIONS
 import adapt.errors as QE
 
@@ -37,7 +37,7 @@ class Spock(object):
                  proc_stream,
                  raw_stream,
                  final_pickdict,
-                 station_metadata,
+                 station_container,
                  event_catalog,
                  channel="*Z",
                  stat_key_list=(),
@@ -48,8 +48,8 @@ class Spock(object):
         if not isinstance(final_pickdict, PickContainer):
             logger.error("`final_pickdict` must be a PickContainer object!")
             raise QE.InvalidType()
-        if not isinstance(station_metadata, StatContainer_Event):
-            logger.error("`station_metadata` must be a StatContainer_Event " +
+        if not isinstance(station_container, StatContainer):
+            logger.error("`station_container` must be a StatContainer " +
                          "object!")
             raise QE.InvalidType()
         if not isinstance(event_catalog, Catalog):
@@ -75,7 +75,7 @@ class Spock(object):
         self.rst = raw_stream.copy()
         self.rtr = self.rst.select(channel=channel)[0]
         self.picks_dict = copy.deepcopy(final_pickdict)
-        self.stats_dict = station_metadata
+        self.stats_cont = station_container
         self.event_cata = event_catalog
         # Optional
         self.stats_keys = stat_key_list
@@ -154,7 +154,7 @@ class Spock(object):
                                      xx, self.funct_dict_outliers[xx]))
                         _funct = getattr(FUNCTIONS, xx)
                         od = _funct(self.ptr, self.rtr, _pick_time,
-                                    self.stats_dict[_ee][_ss],
+                                    self.stats_cont[_ss]["meta"][_ee],
                                     **self.funct_dict_outliers[xx])
                         #
                         self.result_dict_outliers[_ee][_ss][_pp][xx] = od
@@ -252,7 +252,7 @@ class Spock(object):
                                      xx, self.funct_dict_associator[xx]))
                         _funct = getattr(FUNCTIONS, xx)
                         od = _funct(self.ptr, self.rtr, _pick_time,
-                                    self.stats_dict[_ee][_ss],
+                                    self.stats_cont[_ss]["meta"][_ee],
                                     **self.funct_dict_associator[xx])
                         #
                         self.result_dict_associator[_ee][_ss][_pp][xx] = od

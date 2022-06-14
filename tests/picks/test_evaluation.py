@@ -11,7 +11,7 @@ def test_evaluation():
     """
     errors = []
     # --- Work
-    conf = QU.getQuakeConf("./tests_data/test_config_layer_v041.yml")
+    conf = QU.get_adapt_config("./tests_data/test_config_layer_v041.yml")
     st_raw = read()
     st_proc = QPR.processStream(st_raw,
                                 copystream=True,

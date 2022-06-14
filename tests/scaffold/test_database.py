@@ -14,7 +14,7 @@ def test_createStationInventory():
     errors = []
     fakeinv = read_inventory()
     fakeinv.write("./tests_data/TMP.xml", format='STATIONXML')
-    CONF = QU.getQuakeConf("./tests_data/test_config.yml")
+    CONF = QU.get_adapt_config("./tests_data/test_config.yml")
     testinv = TM.createStationInventory(**CONF)
 
     if not testinv == fakeinv:
@@ -30,7 +30,7 @@ def test_buildInventory():
     """
     errors = []
     #
-    CONF = QU.getQuakeConf("./tests_data/test_config.yml")
+    CONF = QU.get_adapt_config("./tests_data/test_config.yml")
     testinv = TM.buildInventory(**CONF)
     if not len(testinv[:]) == 2:
         errors.append("Network appending error")
@@ -54,7 +54,7 @@ def test_createStationContainer():
     errors = []
     attributes = ("fullname", "alias", "lat", "lon", "elev_m", "network")
     #
-    CONF = QU.getQuakeConf("./tests_data/test_config.yml")
+    CONF = QU.get_adapt_config("./tests_data/test_config.yml")
     # v0.5.1 Stein ==> xml type Pbspy Inventory option added
     outdict = TM.createStationContainer(**CONF)
 
@@ -263,7 +263,7 @@ def test_stationContainer_aliashelper():
     """
     errors = []
     #
-    CONF = QU.getQuakeConf("./tests_data/test_config.yml")
+    CONF = QU.get_adapt_config("./tests_data/test_config.yml")
     outdict = TM.createStationContainer(**CONF)
 
     # Set Alias
