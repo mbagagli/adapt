@@ -8,7 +8,7 @@ with open("requirements.txt") as f:
 
 setup(
     name="adapt-fw",
-    version="0.8.0",
+    version="0.8.1",
     author="Matteo Bagagli",
     author_email="matteo.bagagli@ingv.it",
     description="ADAptive Picking Toolbox: a framework for seismic picking",
@@ -34,4 +34,6 @@ setup(
     setup_requires=['wheel'],
     include_package_data=True,
     zip_safe=False,
+    scripts=['bin/adapt_PRODUCTION.py', 'bin/adapt2cnv.py',
+             'bin/adapt_JHD-VELEST.py', 'bin/cnv2adapt.py']
 )

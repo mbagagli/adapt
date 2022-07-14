@@ -556,7 +556,7 @@ def obspy_inventory2adapt_inventory(opinv, create_alias=False):
             else:
                 newst['alias'] = None
             #
-            sd.addStat(newst['fullname'], newst)
+            sd.addStat(newst['network']+"."+newst['fullname'], newst)
 
     # self.statdict_keys = ('fullname',         # (adapt.picks.polarity.Polarizer/None)
     #                       'alias',            # (str/None)
@@ -579,25 +579,6 @@ def obspy_inventory2adapt_inventory(opinv, create_alias=False):
             raise QE.CheckError("There are duplicates in ALIAS list: %r" % failed_list)
     #
     return sd
-
-
-# def folder2obspy_inventory(netfolder):
-#     """ This utils will append all the station contained in
-#     a folder under the same network name (netname)
-#     """
-#     netfolder = Path(netfolder)
-#     out_inv = Inventory()
-#     #
-#     _net = []
-#     _sta = {}  # net: []
-#     _sta = {}  # net: []
-#     for net in netfolder.iterdir():
-#         _inv = Inventory(networks=[net.name, ])
-#         for stat in net.glob("*xml"):
-#             _stat = read_inventory(stat)
-#             import pdb; pdb.set_trace()
-
-
 
 
 # =========================================================  TIPS

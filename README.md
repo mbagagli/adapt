@@ -9,10 +9,9 @@ This library aims to easening the creation of seismic catalogue by means of a se
 
 AUTHOR: _Matteo Bagagli_
 
-VERSION: _0.8.0_
+VERSION: _0.8.1_
 
-DATE: _04.2022_
-
+DATE: _07.2022_
 
 ------------------------------
 

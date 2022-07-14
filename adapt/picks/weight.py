@@ -732,6 +732,36 @@ class Weighter(object):
             self._reject_obs()
             return False
 
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ ADAPT wannabe
+        # ###################
+        # # Collect BULKOBS #
+        # ###################
+        # # https://www.sciencedirect.com/science/article/pii/B9780080448947013385
+        # replicates = {}
+        # orig_mean = np.mean(tuple(self.wd.values()))
+        # # kk is the LEFT OUT obs
+        # for kk, vv in self.wd.items():
+        #     # td = {i: self.wd[i] for i in self.wd.keys() if i != kk}
+        #     ta = [self.wd[i] for i in self.wd.keys() if i != kk]
+        #     replicates[kk] = {'mean': np.mean(ta),
+        #                       'bias': np.mean(ta) - orig_mean
+        #                       }
+        # # Standard deviation of residuals (BIAS)
+        # jkn_bias_std = np.std([vv['bias'] for kk, vv in replicates.items()])
+        # jkn_bias_mean = np.mean([vv['bias'] for kk, vv in replicates.items()])
+
+        # # v0.8.0 --> filtering by 3 std for the biases with the mean!
+        # jkn_bias_low = jkn_bias_mean - 3*jkn_bias_std
+        # jkn_bias_high = jkn_bias_mean + 3*jkn_bias_std
+
+        # for kk, vv in replicates.items():
+        #     if vv['bias'] >= jkn_bias_low and vv['bias'] <= jkn_bias_high:
+        #         self.triage_dict['valid_obs'].append((kk, self.wd[kk]))
+        #     else:
+        #         # It's a complete outliers
+        #         self.triage_dict['outliers'].append((kk, self.wd[kk]))
+
+        # @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ QUAKE-ORIGINAL
         ###################
         # Collect BULKOBS #
         ###################
@@ -745,16 +775,11 @@ class Weighter(object):
             replicates[kk] = {'mean': np.mean(ta),
                               'bias': np.mean(ta) - orig_mean
                               }
-        # Standard deviation of residuals (BIAS)
-        jkn_bias_std = np.std([vv['bias'] for kk, vv in replicates.items()])
-        jkn_bias_mean =  np.mean([vv['bias'] for kk, vv in replicates.items()])
-
-        # v0.8.0 --> filtering by 3 std for the biases with the mean!
-        jkn_bias_low =  jkn_bias_mean - 3*jkn_bias_std
-        jkn_bias_high =  jkn_bias_mean + 3*jkn_bias_std
+        #
+        jkn_bias_std = np.std([np.abs(vv['bias']) for kk, vv in replicates.items()])
 
         for kk, vv in replicates.items():
-            if vv['bias'] >= jkn_bias_low and vv['bias'] <= jkn_bias_high:
+            if not np.abs(vv['bias']) >= 3*jkn_bias_std:
                 self.triage_dict['valid_obs'].append((kk, self.wd[kk]))
             else:
                 # It's a complete outliers

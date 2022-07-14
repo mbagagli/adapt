@@ -163,7 +163,8 @@ def PredictPhaseArrival_PYROCKOCAKE(
                 rottenstat.append((
                             stat["network"],
                             stat["fullname"],
-                            stat['elev_m']
+                            stat['elev_m'],
+                            e
                             ))
                 continue
 
@@ -175,6 +176,15 @@ def PredictPhaseArrival_PYROCKOCAKE(
                                  "NO ARRIVALS, EXIT !!" % (
                                     eqid, stat['fullname'],
                                     source_depth * MT, distStaEpi * MT))
+                    # # --- Original QUAKE --> throw an error
+                    # raise QE.MissingVariable()
+                    # # --- ADAPT v0.8 --> note and go on
+                    # rottenstat.append((
+                    #             stat["network"],
+                    #             stat["fullname"],
+                    #             stat['elev_m'],
+                    #             "No first arrival prediction"
+                    #             ))
                     raise QE.MissingVariable()
                 else:
                     if perturbate_source:
@@ -198,7 +208,8 @@ def PredictPhaseArrival_PYROCKOCAKE(
                              }
                     namephs = "Predicted_" + ii
                     logger.debug("%s - %s" % (namephs, tmppd["timeUTC_pick"]))
-                    pickDict.addPick(stat["fullname"], namephs, **tmppd)
+                    pickDict.addPick(stat["network"]+"."+stat["fullname"],
+                                     namephs, **tmppd)
         #
     return pickDict, rottenstat
 

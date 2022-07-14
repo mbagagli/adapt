@@ -1521,12 +1521,26 @@ class CNV(object):
             pickdict._sort_by_time()
             pickdict._keep_first_only()
 
-    def export_to_file(self, outname):
+    def export_to_file(self, outname, use_alias=False):
         """ Simply export out """
+
+        if use_alias:
+            use_alias_switch = True
+            if isinstance(use_alias, str):
+                alias_asc = loadPickleObj(use_alias)
+            elif isinstance(use_alias, StatContainer):
+                alias_asc = use_alias
+            else:
+                raise TypeError("If specified, 'use_alias' par must be a string "
+                                "to an adapt StatContainer pickle, or a StatContainer itself!")
+        else:
+            use_alias_switch = False
+            alias_asc = None
+        #
         self._remove_empty_stations()
-        quake2cnv(self.cnv_catalog, self.cnv_pickList, statdict=None,
+        quake2cnv(self.cnv_catalog, self.cnv_pickList, statdict=alias_asc,
                   phase_list=["VEL_P", "VEL_S"],
-                  fixed_class=False, use_alias=False, out_file=outname)
+                  fixed_class=False, use_alias=use_alias_switch, out_file=outname)
 
     def get_catalog(self):
         if self.cnv_catalog:

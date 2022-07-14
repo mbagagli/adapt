@@ -381,7 +381,7 @@ def secondary_phase_detection(proc_trace,
                               tw_noise=0.6,
                               tw_start=2.0,
                               start_buff=1.0,
-                              tw_noise_earleshearer=2.0,           #5.75
+                              tw_noise_earleshearer=2.0,           # 5.75
                               tw_noise_buffer_earleshearer=0.0,    # 0.25
                               earleshearer_dict={},
                               thr_earleshearer=0.9,
