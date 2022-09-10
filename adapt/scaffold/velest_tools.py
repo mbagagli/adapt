@@ -305,6 +305,49 @@ def _extract_event_cnv(filepath, id):
     return outList
 
 
+# def _extract_all_events_cnv(filepath):
+#     """ Function to parse multi-events in CNV file into python
+
+#     Return a dictionary of EQID keys each one with 2 elements with
+#     the header string and a list of phases (12 chars)
+
+#     Args:
+#         filepath (str): path to the CNV file containing the event.
+
+#     Returns:
+#         outDict (dict): sdict containig 2 index, the first being the
+#         header, the second being  a list of phase list.
+
+#     """
+#     outDict = {}
+#     #
+#     inside_event = False
+#     with open(filepath, "r") as CNV:
+
+#         for _i, _l in enumerate(CNV):
+#             fields = _l.strip().split()
+
+#             if fields and not inside_event:
+#                 cnvid = fields[-1]
+#                 header = _l.strip()
+#                 inside_event = True
+#                 phaselist = []
+#                 continue
+
+#             if inside_event:
+#                 lstr = _l.strip()
+#                 obs = [lstr[idx:idx + 12] for idx in range(0, len(lstr), 12)]
+#                 phaselist = phaselist + obs
+
+#             if not fields:
+#                 # Storing the EVENT
+#                 outDict[cnvid] = [header, phaselist]
+#                 # closing an event
+#                 inside_event = False
+#                 continue
+#     return outDict
+
+
 def _extract_all_events_cnv(filepath):
     """ Function to parse multi-events in CNV file into python
 
@@ -325,17 +368,17 @@ def _extract_all_events_cnv(filepath):
     with open(filepath, "r") as CNV:
 
         for _i, _l in enumerate(CNV):
-            fields = _l.strip().split()
+            fields = _l[:-1].split()
 
             if fields and not inside_event:
                 cnvid = fields[-1]
-                header = _l.strip()
+                header = _l[:-1]
                 inside_event = True
                 phaselist = []
                 continue
 
             if inside_event:
-                lstr = _l.strip()
+                lstr = _l[:-1]
                 obs = [lstr[idx:idx + 12] for idx in range(0, len(lstr), 12)]
                 phaselist = phaselist + obs
 
@@ -1542,15 +1585,23 @@ class CNV(object):
                   phase_list=["VEL_P", "VEL_S"],
                   fixed_class=False, use_alias=use_alias_switch, out_file=outname)
 
-    def get_catalog(self):
+    def get_catalog(self, evid=None):
         if self.cnv_catalog:
-            return self.cnv_catalog
+            if evid:
+                return [ev for ev in self.cnv_catalog if ev.resource_id.id == evid][0]
+            else:
+                # Return ALL
+                return self.cnv_catalog
         else:
             logger.warning("Missing CATALOG. Run `import_file` method first!")
 
-    def get_pick_dict_list(self):
+    def get_pick_dict_list(self, evid=None):
         if self.cnv_pickList:
-            return self.cnv_pickList
+            if evid:
+                return [ii for ii in self.cnv_pickList if ii.eqid == evid][0]
+            else:
+                # Return ALL
+                return self.cnv_pickList
         else:
             logger.warning("Missing PICKDICTLIST. Run `import_file` method first!")
 
@@ -1595,9 +1646,15 @@ class RELOC(object):
         else:
             raise ValueError("Unknown DIRECTION:  %s" % direction.upper())
 
-    def _cnv_export(self, rel_cat, rel_pick_list, outfile_name="cnv_eport.cnv"):
+    def _cnv_export(self, rel_cat=None, rel_pick_list=None,
+                    outfile_name="cnv_eport.cnv"):
         """ Simply export catalog and picks into CNV format """
-        quake2cnv(self.reloc_catalog, self.reloc_pickList,
+        if not rel_cat:
+            rel_cat = self.reloc_catalog
+        if not rel_pick_list:
+            rel_pick_list = self.reloc_pickList
+        #
+        quake2cnv(rel_cat, rel_pick_list,
                   statdict=None,
                   phase_list=["P", "S"],
                   fixed_class=False, use_alias=False, out_file=outfile_name)

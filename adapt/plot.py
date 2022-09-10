@@ -325,7 +325,10 @@ def plotPick_ADAPT(worktrace,
                  # "HOS": "#029386",  # teal
                  "FP_": "orange",
                  "P1": "#800020",
-                 "VEL": "blue"   # burgundry
+                 "VEL": "blue",   # burgundry
+                 #
+                 "AAR": "#800020",
+                 "KIT": "blue"   # burgundry
                  }
     LineSpecList = ("-", "--", ":")  # Used for multiple istance of Pick
 
@@ -1556,13 +1559,17 @@ def plot_event_section(opev, pickdict, adapt_inventory, opstr,
     # ======== Real Plot  --> WAVES
     epidist_statname = []
     for tr in opstr:
-        statname = tr.stats.station
+        # statname = tr.stats.station  # QUAKE
+        statname = tr.stats.network+"."+tr.stats.station  # ADAPT
 
         # =================================  Chek if picked
         if only_picked_traces:
             statpick = statname
             if pick_stat_alias:
-                statpick = adapt_inventory[statpick]['alias']
+                try:
+                    statpick = adapt_inventory[statpick]['alias']
+                except:
+                    import pdb; pdb.set_trace()
             #
             try:
                 _ = pickdict[statpick]

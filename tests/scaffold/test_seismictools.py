@@ -1,6 +1,5 @@
 import pprint
 import obspy
-from adapt import forward as FWD
 from adapt.database import PickContainer
 from adapt.scaffold import seismictools as ST
 

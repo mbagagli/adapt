@@ -282,6 +282,8 @@ def event_local_magnitude(event,
 
     for ss in pd_stat:
         ssdict = {}
+        ssnetw = ss.split(".")[0]
+        ssname = ss.split(".")[1]
 
         try:
             VALIDPHASE = _is_phase_valid(
@@ -297,7 +299,9 @@ def event_local_magnitude(event,
 
             # 1. Get station + Calculate EPIDIST
             try:
-                netobj = inventory.select(station=ss)[0]
+                # netobj = inventory.select(station=ss)[0]  # OLD
+                netobj = inventory.select(network=ssnetw,
+                                          station=ssname)[0]
             except IndexError:
                 logger.error("!!! Station %s Missing in Inventory !!!" % ss)
                 continue
@@ -317,11 +321,12 @@ def event_local_magnitude(event,
                                 statobj.longitude,
                                 outdist='km')
 
-            logger.info("EVENT:  %s  -  STAT:  %s.%s (%6.2f) --> %s found --> calculate Mlv" %
+            logger.info("EVENT:  %s  -  STAT:  %s.%s (%6.2f) --> %s found --> calculate MLv" %
                         (evid, netobj.code, ss, epidist_km, phase_check))
 
             # 2. Read Trace
-            st = read(path_to_waveforms + "/*." + ss + ".*")
+            # st = read(path_to_waveforms + "/*." + ss + ".*")  #  OLD
+            st = read(path_to_waveforms + "/*." + ssname + ".*")
 
             # 3. Extract pick and define window for station-mag
             picktime = (pickcontainer[ss][phase_check]
@@ -343,8 +348,10 @@ def event_local_magnitude(event,
                                                 output=station_correction,
                                                 spaceunit=station_correction_unit,
                                                 response_filt_parameters=response_filter_dict)
+                    logger.error("  - Success -")
 
                 except QE.MissingAttribute:
+                    logger.error("  - Failed -")
                     smg, amp, ampt, chan = None, None, None, None
 
             else:
@@ -516,16 +523,19 @@ def _calc_station_Mlv(opst, opinv, searchwin_start, searchwin_end, epidist,
     # ----------------------  Remove response
 
     # ObsPy: Displacement (m) Velocity (m/s) Acceleration (m/s^2)
-    logger.debug(("Stat: %s - RemoveResponse: %s - Unit: %s"
-                  "FilterParam: %r" + os.linesep) %
+    logger.info("Stat: %s - RemoveResponse: %s - Unit: %s"
+                  "FilterParam: %r" %
                  (tr.stats.station, output.upper(), spaceunit,
                   response_filt_parameters))
-    logger.debug("Stat: %s - RemoveResponse: %s - Unit: %s" %
-                 (tr.stats.station, output.upper(), spaceunit))
 
-    tr.remove_response(
-        output=output.upper(),
-        **response_filt_parameters)
+    # ADAPT v0.8.2
+    try:
+        tr.remove_response(
+            output=output.upper(),
+            **response_filt_parameters)
+    except:
+        logger.error("Cannot remove the filter-response! Skipping station!")
+        return None, None, None, traceChannel
 
     # === NEW --> The next switch is though for instruments reconding in M/s
     # ===         If some instruments record in nm/s we to first convert them into

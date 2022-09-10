@@ -457,7 +457,7 @@ class StatContainer(OrderedDict):
         """
         return self.keys()
 
-    def get_statname_from_alias(self, instr):
+    def get_statname_from_alias(self, instr, return_network=False):
         """ Return FULLNAME from ALIAS """
         aa = [(ss, dd) for ss, dd in self.items() if dd['alias'] == str(instr)]
         if len(aa) > 1:
@@ -475,7 +475,11 @@ class StatContainer(OrderedDict):
         except KeyError:
             raise QE.CheckError("Station  %s  has no fullname key !!!" % instr)
         #
-        return fn
+        if not return_network:
+            return fn
+        else:
+            net = aa[0][1]['network']
+            return (fn, net)
 
     def get_alias(self, instr):
         """ Return the ALIAS corresponding to input STATNAME """
