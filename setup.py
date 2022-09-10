@@ -8,7 +8,7 @@ with open("requirements.txt") as f:
 
 setup(
     name="adapt-fw",
-    version="0.8.1",
+    version="0.8.2",
     author="Matteo Bagagli",
     author_email="matteo.bagagli@ingv.it",
     description="ADAptive Picking Toolbox: a framework for seismic picking",
