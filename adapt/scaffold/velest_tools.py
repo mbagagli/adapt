@@ -801,15 +801,18 @@ def remove_obs_from_cnv(cnvfile, staresfile, threshold=1.0):
         for _xx, _ll in enumerate(INSTAT):
             if _xx == 0 or _ll[0] == "#":
                 continue
-            #
+
             fields = _ll.strip().split()
             eqid = fields[-1]
-            res = fields[3]
             statname = fields[0]
+            phase = fields[1].upper()
+            res = fields[3]
+
             if np.abs(np.float(res)) >= threshold:
                 # Seek the event, remove the obs
                 cnvDict[eqid][1] = [obs for obs in cnvDict[eqid][1]
-                                    if obs[0:4] != statname]
+                                    if obs[0:5] != statname+phase]
+
             # Progress Bar
             progressBar(_xx, tl-1, prefix='Removing OBS:', suffix='Complete',
                         barLength=15)
