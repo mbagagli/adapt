@@ -16,7 +16,7 @@ from adapt import __version__, __author__, __date__
 from adapt.database import PickContainer, StatContainer
 import adapt.parser as QP
 import adapt.utils as QU
-from adapt.utils import progressBar, loadPickleObj, savePickleObj
+from adapt.utils import progressBar, loadPickleObj, savePickleObj, calcEpiDist
 import adapt.errors as QE
 
 
@@ -1553,6 +1553,55 @@ class CNV(object):
                         # Seek the event, remove the obs
                         _pd = QU.extract_pickdict(self.cnv_pickList, eqid=eqid)
                         _pd.delete_pick(statname, "VEL_"+phasename, 0)  # MB only one phase per station when reading CNV, always! --> do not change 0
+
+    def remove_obs_by_epidist(self, stat_container,
+                              threshold=500.0):
+        """ Remove observations based on EpiDist """
+        if not isinstance(stat_container, (StatContainer, str, Path)):
+            raise TypeError("stat_container must be either a path/str to file "
+                            "or an AdaptStationContainer itself")
+        else:
+            if isinstance(stat_container, str):
+                asc = loadPickleObj(stat_container)
+            elif isinstance(stat_container, Path):
+                asc = loadPickleObj(stat_container, str(Path.resolve()))
+            elif isinstance(stat_container, StatContainer):
+                asc = stat_container
+            else:
+                raise TypeError("Cannot load type:  %s" % type(stat_container))
+        #
+        if not self.cnv_catalog or not self.cnv_pickList:
+            logger.error("ERROR: please import a CNV first !!!")
+        else:
+            tot_obs_removed = 0
+            for ev in self.cnv_catalog:
+                # Expand EVID
+                evid = ev.resource_id.id
+                logger.debug("Working with  EVID:  %s" % evid)
+                evlon = ev.origins[0].longitude
+                evlat = ev.origins[0].latitude
+
+                # Search PickContainer --> get the reference
+                pd_class = [ii for ii in self.cnv_pickList if ii.eqid == evid][0]
+                pd_loop = copy.deepcopy(pd_class)
+
+                for ss in pd_loop:
+                    # Seek
+                    stalon = asc.getStat(ss, is_alias=True)["lon"]
+                    stalat = asc.getStat(ss, is_alias=True)["lat"]
+
+                    # Calc
+                    epidist = calcEpiDist(evlat, evlon, stalat, stalon)
+                    if  epidist >= threshold:
+                        logger.debug("Evid: %s  -  Stat: %s - EpiDist:  %.2f --> REMOVED" %
+                                    (evid, ss, epidist))
+                        del pd_class[ss]
+                        tot_obs_removed += 1
+                    else:
+                        pass
+            #
+            logger.info("Removed %d OBS with EPI-DIST >= %.2f" %
+                        (tot_obs_removed, threshold))
 
     def keep_first_arrival(self):
         """ This wrapper function will internally call the private

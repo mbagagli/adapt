@@ -568,7 +568,9 @@ class StatContainer(OrderedDict):
 
         """
         if is_alias:
-            return [ss for ss in self if ss['alias'] == stat_name]
+            for ss in self:
+                if self[ss]['alias'] == stat_name:
+                    return self[ss]
         else:
             return self[stat_name]
 
